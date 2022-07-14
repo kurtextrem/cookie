@@ -54,21 +54,22 @@ function parse(str, options) {
   var dec = opt.decode || decode;
 
   var index = 0
+  var eqIdx = 0
+  var endIdx = 0
   while (index < str.length) {
-    var eqIdx = str.indexOf('=', index)
+    eqIdx = str.indexOf('=', index)
 
     // no more cookie pairs
     if (eqIdx === -1) {
       break
     }
 
-    var endIdx = str.indexOf(';', index)
+    endIdx = str.indexOf(';', index)
+    endIdx = (endIdx === -1) ? str.length : endIdx
 
-    if (endIdx === -1) {
-      endIdx = str.length
-    } else if (endIdx < eqIdx) {
+    if (endIdx < eqIdx) {
       // backtrack on prior semicolon
-      index = str.lastIndexOf(';', eqIdx - 1) + 1
+      index = endIdx + 1
       continue
     }
 
