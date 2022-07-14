@@ -50,13 +50,23 @@ function parse(str, options) {
   }
 
   var obj = {}
+  var length = str.length
+
+  if (length < 2) {
+    // RFC 6265 sec 4.1.1, RFC 2616 2.2 defines a cookie name consists of one char minimum, plus '='.
+    return obj
+  }
+
   var opt = options || {};
   var dec = opt.decode || decode;
 
   var index = 0
   var eqIdx = 0
   var endIdx = 0
-  while (index < str.length) {
+  var key;
+  var val;
+
+  do {
     eqIdx = str.indexOf('=', index)
 
     // no more cookie pairs
@@ -65,19 +75,20 @@ function parse(str, options) {
     }
 
     endIdx = str.indexOf(';', index)
-    endIdx = (endIdx === -1) ? str.length : endIdx
 
-    if (endIdx < eqIdx) {
+    if (endIdx === -1) {
+      endIdx = str.length
+    } else if (endIdx < eqIdx) {
       // backtrack on prior semicolon
       index = endIdx + 1
       continue
     }
 
-    var key = str.slice(index, eqIdx).trim()
+    key = str.slice(index, eqIdx).trim()
 
     // only assign once
     if (undefined === obj[key]) {
-      var val = str.slice(eqIdx + 1, endIdx).trim()
+      val = str.slice(eqIdx + 1, endIdx).trim()
 
       // quoted values
       if (val.charCodeAt(0) === 0x22) {
@@ -88,7 +99,7 @@ function parse(str, options) {
     }
 
     index = endIdx + 1
-  }
+  } while (index < length)
 
   return obj;
 }
